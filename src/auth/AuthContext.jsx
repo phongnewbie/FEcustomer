@@ -49,6 +49,13 @@ export function AuthProvider({ children }) {
         return;
       }
 
+      // Nếu không cấu hình API_BASE_URL (ví dụ chạy MockAPI-only), bỏ qua verify để không ghi đè role
+      if (!process.env.REACT_APP_API_BASE_URL) {
+        setUser(storedUser);
+        setLoading(false);
+        return;
+      }
+
       try {
         // Gọi API để verify token và lấy thông tin user mới nhất
         const response = await authAPI.getCurrentUser();
@@ -60,13 +67,9 @@ export function AuthProvider({ children }) {
         
         // Kiểm tra nhiều cách backend có thể trả về role
         // Ưu tiên response.data.user.role (format của backend hiện tại)
-        const role = response.data?.user?.role || 
-                     userObj?.role || 
-                     response.data?.role ||
-                     response.role || 
-                     userObj?.userRole ||
-                     storedUser.role ||
-                     'user';
+        // Chỉ cập nhật role khi backend trả về hợp lệ; nếu không, giữ nguyên role hiện có
+        const roleFromServer = response.data?.user?.role || userObj?.role || response.data?.role || response.role || userObj?.userRole;
+        const role = roleFromServer || storedUser.role;
         
         const userData = {
           id: userObj?.id || userObj?._id || response.id || response._id || storedUser.id,
@@ -94,8 +97,8 @@ export function AuthProvider({ children }) {
           writeCurrentUser(null);
           setToken(null);
         } else {
-          // Lỗi khác, vẫn giữ session nhưng log lỗi
-          console.warn('Token verification error, keeping session:', error);
+          // Lỗi khác (CORS, network...), giữ nguyên user/role hiện có để không bị tụt về 'user'
+          console.warn('Token verification error, keeping stored user:', error);
           setUser(storedUser);
         }
       } finally {

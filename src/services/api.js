@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 // Optional: MockAPI endpoint (absolute), e.g. https://xxxx.mockapi.io/api/v1/images
 const MOCKAPI_URL = 'https://6309f78a32499100327e5878.mockapi.io/QLND';
 // Optional: Cloudinary unsigned upload config
@@ -8,7 +8,7 @@ const CLOUDINARY_UNSIGNED_PRESET = 'customer';
 export const IS_USING_MOCKAPI = !!MOCKAPI_URL;
 // Base URL cho static files: ưu tiên env, fallback suy ra từ API_BASE_URL
 const BACKEND_BASE_URL =
-  process.env.REACT_APP_BACKEND_BASE_URL;
+  process.env.REACT_APP_BACKEND_BASE_URL || API_BASE_URL.replace(/\/api\/?$/, '');
 
 const TOKEN_KEY = 'app_token';
 
