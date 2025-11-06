@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://becustomer.onrender.com/api';
 // Optional: MockAPI endpoint (absolute), e.g. https://xxxx.mockapi.io/api/v1/images
 const MOCKAPI_URL = 'https://6309f78a32499100327e5878.mockapi.io/QLND';
 // Optional: Cloudinary unsigned upload config
