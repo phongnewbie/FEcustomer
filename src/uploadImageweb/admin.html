@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Quản lý Ảnh</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚙️ Quản lý Ảnh - Admin</h1>
+            <nav>
+                <a href="index.html">Trang chủ</a>
+                <a href="admin.html" class="active">Admin</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="upload-section">
+                <h2>Upload Ảnh Mới từ Máy Tính</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+                    <div class="upload-content">
+                        <p>📁 <strong>Kéo thả ảnh vào đây</strong> hoặc <strong>click để chọn</strong> từ máy tính</p>
+                        <button onclick="document.getElementById('fileInput').click()" class="upload-btn">📂 Chọn ảnh từ máy tính</button>
+                        <p class="upload-hint">Hỗ trợ: JPG, PNG, GIF, WEBP (có thể chọn nhiều ảnh cùng lúc)</p>
+                    </div>
+                </div>
+                
+                <!-- Preview ảnh đã chọn -->
+                <div id="previewSection" class="preview-section" style="display: none;">
+                    <h3>Ảnh đã chọn (<span id="previewCount">0</span>):</h3>
+                    <div id="previewGrid" class="preview-grid"></div>
+                    <div class="preview-actions">
+                        <button onclick="uploadSelectedImages()" class="upload-selected-btn">⬆️ Upload tất cả ảnh</button>
+                        <button onclick="clearPreview()" class="clear-btn">🗑️ Xóa tất cả</button>
+                    </div>
+                </div>
+                
+                <div id="uploadProgress" class="upload-progress" style="display: none;"></div>
+                <div id="uploadError" class="error" style="display: none;"></div>
+            </section>
+
+            <section class="images-section">
+                <h2>Danh sách Ảnh</h2>
+                <div id="loading" class="loading" style="display: none;">Đang tải...</div>
+                <div id="error" class="error" style="display: none;"></div>
+                <div id="imageList" class="image-list">
+                    <!-- Danh sách ảnh sẽ được hiển thị ở đây -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
+
