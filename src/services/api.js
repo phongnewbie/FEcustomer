@@ -8,7 +8,7 @@ const CLOUDINARY_UNSIGNED_PRESET = 'customer';
 export const IS_USING_MOCKAPI = !!MOCKAPI_URL;
 // Base URL cho static files: ưu tiên env, fallback suy ra từ API_BASE_URL
 const BACKEND_BASE_URL =
-  process.env.REACT_APP_BACKEND_BASE_URL || API_BASE_URL.replace(/\/api\/?$/, '');
+  process.env.REACT_APP_BACKEND_BASE_URL;
 
 const TOKEN_KEY = 'app_token';
 
