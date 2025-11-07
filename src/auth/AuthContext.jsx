@@ -59,7 +59,6 @@ export function AuthProvider({ children }) {
       try {
         // Gọi API để verify token và lấy thông tin user mới nhất
         const response = await authAPI.getCurrentUser();
-        console.log('Get current user response:', response); // Debug log
         
         // Backend có thể trả về: { success, message, data: { user: {...} } }
         // Hoặc có thể là: { user: {...} }
@@ -78,7 +77,6 @@ export function AuthProvider({ children }) {
           role: role,
         };
         
-        console.log('User data after verify:', userData); // Debug log
         
         // Cập nhật user info từ backend
         setUser(userData);

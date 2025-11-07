@@ -49,14 +49,11 @@ async function apiCall(endpoint, options = {}) {
     const contentType = response.headers.get('content-type');
     const isJson = contentType && contentType.includes('application/json');
     
-    // Log để debug
-    console.log(`[API] ${endpoint} - Status: ${response.status}, Content-Type: ${contentType}`);
     
     let data;
     if (isJson) {
       try {
         data = await response.json();
-        console.log(`[API] ${endpoint} - Response:`, data);
       } catch (parseError) {
         // Nếu parse JSON thất bại, có thể response là HTML error page
         // Đọc từ clone để xem nội dung
@@ -75,7 +72,6 @@ async function apiCall(endpoint, options = {}) {
     } else {
       // Nếu không phải JSON, lấy text để kiểm tra
       const text = await response.text();
-      console.log(`[API] ${endpoint} - Non-JSON response:`, text.substring(0, 200));
       if (response.ok) {
         // Nếu response OK nhưng không phải JSON, trả về text
         return text;

@@ -63,9 +63,6 @@ export default function Gallery() {
     setError('');
     try {
       const response = await imagesAPI.getAll(page, limit);
-      console.log('Gallery - Received response:', response);
-      console.log('Gallery - Response type:', typeof response);
-      console.log('Gallery - Is array:', Array.isArray(response));
       
       // Đảm bảo luôn có array, xử lý nhiều format response
       let imageList = [];
@@ -98,13 +95,10 @@ export default function Gallery() {
         
         // Nếu vẫn không phải array, log để debug
         if (!Array.isArray(imageList)) {
-          console.warn('Could not parse image list from response:', response);
           imageList = [];
         }
       }
       
-      console.log('Gallery - Processed image list:', imageList);
-      console.log('Gallery - Image list length:', imageList.length);
       
       // Đảm bảo luôn set một array
       setImages(Array.isArray(imageList) ? imageList : []);
@@ -116,7 +110,6 @@ export default function Gallery() {
         setPagination(response.data.pagination);
       }
     } catch (err) {
-      console.error('Error loading images:', err);
       // Đảm bảo set images là array rỗng khi có lỗi
       setImages([]);
       // Hiển thị thông báo lỗi chi tiết hơn
@@ -250,7 +243,6 @@ export default function Gallery() {
             
             // Nếu không có base64 và không có URL, bỏ qua
             if (!base64 && !rawUrl) {
-              console.warn('Image missing URL/base64:', img);
               return null;
             }
             
@@ -266,13 +258,6 @@ export default function Gallery() {
               finalUrl = `${imageUrl}${imageUrl.includes('?') ? '&' : '?'}v=${versionTag}`;
             }
             
-            // Debug log
-            console.log('Rendering image:', { 
-              originalname: imageName, 
-              hasBase64: !!base64,
-              rawUrl, 
-              finalUrl: base64 ? 'base64 (hidden)' : finalUrl
-            });
             
             // Xử lý uploadedBy - có thể là object hoặc string
             let uploadedBy = 'Unknown';
@@ -304,22 +289,6 @@ export default function Gallery() {
                     alt={imageName} 
                     className="image-card-img"
                     loading="lazy"
-                    onError={(e) => {
-                      console.error('❌ Image load error:', {
-                        finalUrl,
-                        rawUrl,
-                        imageName,
-                        img
-                      });
-                      e.target.style.display = 'none';
-                      const errorDiv = e.target.nextElementSibling;
-                      if (errorDiv) {
-                        errorDiv.style.display = 'block';
-                      }
-                    }}
-                    onLoad={() => {
-                      console.log('✅ Image loaded successfully:', finalUrl);
-                    }}
                   />
                   <div style={{ display: 'none', padding: '20px', textAlign: 'center', color: '#999' }}>
                     Không thể tải ảnh: {imageName}
