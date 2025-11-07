@@ -5,7 +5,7 @@ import '../styles/common.css';
 
 export default function AdminUpload() {
   const { user } = useAuth();
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,32 +28,52 @@ export default function AdminUpload() {
     return null;
   };
 
+  const validateFiles = (fileList) => {
+    const fileArray = Array.from(fileList);
+    const errors = [];
+    
+    fileArray.forEach((file, index) => {
+      const validationError = validateFile(file);
+      if (validationError) {
+        errors.push(`${file.name}: ${validationError}`);
+      }
+    });
+    
+    return errors;
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
     setError('');
     
-    if (!file) {
-      setError('Vui lòng chọn file ảnh');
+    if (!files || files.length === 0) {
+      setError('Vui lòng chọn ít nhất một file ảnh');
       return;
     }
 
-    // Validate file
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
+    // Validate tất cả files
+    const validationErrors = validateFiles(files);
+    if (validationErrors.length > 0) {
+      setError(validationErrors.join('\n'));
       return;
     }
 
     setLoading(true);
     try {
       if (IS_USING_MOCKAPI) {
-        await uploadAPI.uploadViaCloudinaryAndMockAPI(file, user);
+        // Nếu dùng MockAPI, upload từng file một
+        const uploadPromises = Array.from(files).map(file => 
+          uploadAPI.uploadViaCloudinaryAndMockAPI(file, user)
+        );
+        await Promise.all(uploadPromises);
+        setMessage(`Đã tải lên thành công ${files.length} ảnh!`);
       } else {
-        await uploadAPI.uploadImage(file, user);
+        // Dùng backend server với upload multiple
+        await uploadAPI.uploadMultipleImages(files, user);
+        setMessage(`Đã tải lên thành công ${files.length} ảnh!`);
       }
-      setMessage('Tải ảnh lên thành công!');
-      setFile(null);
+      setFiles([]);
       // Reset file input
       e.target.reset();
     } catch (err) {
@@ -67,29 +87,46 @@ export default function AdminUpload() {
     <div className="form-container">
       <h2 className="form-title">Tải ảnh lên</h2>
       {message && <div className="alert alert-success">{message}</div>}
-      {error && <div className="alert alert-error">{error}</div>}
+      {error && <div className="alert alert-error">{error.split('\n').map((line, i) => <div key={i}>{line}</div>)}</div>}
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label className="form-label">Chọn file ảnh (hỗ trợ: JPG, PNG, GIF, WEBP, BMP, DDS)</label>
+          <label className="form-label">Chọn file ảnh (hỗ trợ: JPG, PNG, GIF, WEBP, BMP, DDS) - Có thể chọn nhiều file</label>
           <input 
             type="file" 
             accept="image/*,.dds" 
             className="file-upload-input"
-            onChange={e => setFile(e.target.files?.[0] || null)}
+            multiple
+            onChange={e => {
+              const selectedFiles = e.target.files;
+              if (selectedFiles && selectedFiles.length > 0) {
+                setFiles(Array.from(selectedFiles));
+              } else {
+                setFiles([]);
+              }
+            }}
             required
           />
-          {file && (
-            <div style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
-              Đã chọn: {file.name}
+          {files.length > 0 && (
+            <div style={{ marginTop: '12px', fontSize: '14px', color: '#666' }}>
+              <div style={{ marginBottom: '8px', fontWeight: 'bold' }}>
+                Đã chọn {files.length} file:
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0, maxHeight: '200px', overflowY: 'auto' }}>
+                {Array.from(files).map((file, index) => (
+                  <li key={index} style={{ padding: '4px 0', borderBottom: '1px solid #eee' }}>
+                    {file.name} ({(file.size / 1024).toFixed(2)} KB)
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>
         <button 
           type="submit" 
           className="btn btn-primary"
-          disabled={loading || !file}
+          disabled={loading || files.length === 0}
         >
-          {loading ? 'Đang tải lên...' : 'Đăng ảnh'}
+          {loading ? `Đang tải lên ${files.length} ảnh...` : `Đăng ${files.length > 0 ? files.length : ''} ảnh`}
         </button>
       </form>
     </div>

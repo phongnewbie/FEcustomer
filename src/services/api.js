@@ -189,6 +189,26 @@ export const uploadAPI = {
       body: JSON.stringify(imageData),
     });
   },
+
+  // Upload nhiều ảnh cùng lúc (backend server)
+  uploadMultipleImages: async (files, userInfo = null) => {
+    if (!files || files.length === 0) {
+      throw new Error('Vui lòng chọn ít nhất một file');
+    }
+
+    // Upload với FormData cho backend server
+    const formData = new FormData();
+    // Append tất cả files với key "images" (hoặc "image" tùy backend)
+    Array.from(files).forEach(file => {
+      formData.append('images', file); // Backend thường dùng "images" cho multiple upload
+    });
+
+    return apiCall('/upload/multiple', {
+      method: 'POST',
+      body: formData,
+      // Không set Content-Type header, browser sẽ tự động set với boundary cho multipart/form-data
+    });
+  },
   // Upload qua Cloudinary (unsigned) rồi lưu URL vào MockAPI
   uploadViaCloudinaryAndMockAPI: async (file, userInfo = null, imageNameOverride) => {
     if (!MOCKAPI_URL) {

@@ -32,6 +32,22 @@ const getImageUrl = (url) => {
   return `${backendUrl}${cleanUrl}`;
 };
 
+// kept previously for tone parsing; logic is now in filtered()
+
+const getCanonicalName = (img = {}) => {
+  if (!img || typeof img !== 'object') return '';
+  const name = img.name || img.originalname || img.filename || img.originalName || img.fileName || '';
+  return typeof name === 'string' ? name.trim() : '';
+};
+
+// (not used after stricter filter; keep for potential future use)
+
+const toneOptions = [
+  { value: 'white', label: 'Da trắng (_w)' },
+  { value: 'black', label: 'Da đen (_b)' },
+  { value: 'yellow', label: 'Da vàng (khác)' },
+];
+
 export default function Gallery() {
   const [query, setQuery] = useState('');
   const [images, setImages] = useState([]);
@@ -40,6 +56,7 @@ export default function Gallery() {
   const [page, setPage] = useState(1);
   const [limit] = useState(20);
   const [pagination, setPagination] = useState(null);
+  const [toneFilter, setToneFilter] = useState('all');
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -123,14 +140,24 @@ export default function Gallery() {
     // Đảm bảo images luôn là array
     const safeImages = Array.isArray(images) ? images : [];
     const q = query.trim().toLowerCase();
-    if (!q) return safeImages;
     return safeImages.filter(img => {
       if (!img || typeof img !== 'object') return false;
-      // Kiểm tra nhiều field name có thể có
-      const name = img.originalname || img.originalName || img.filename || img.name || '';
-      return name.toLowerCase().includes(q);
+
+      const canonical = getCanonicalName(img);
+      if (!canonical) return false;
+
+      const matchesQuery = !q || canonical.toLowerCase().includes(q);
+      if (!matchesQuery) return false;
+
+      if (toneFilter === 'all') return true;
+
+      const base = canonical.toLowerCase().replace(/\.[^/.]+$/, '');
+      if (toneFilter === 'white') return /_w$/.test(base);
+      if (toneFilter === 'black') return /_b$/.test(base);
+      if (toneFilter === 'yellow') return !/_w$/.test(base) && !/_b$/.test(base);
+      return true;
     });
-  }, [images, query]);
+  }, [images, query, toneFilter]);
 
   const downloadImage = async (imageUrl, filename, isBase64 = false) => {
     try {
@@ -166,6 +193,19 @@ export default function Gallery() {
         value={query}
         onChange={e => setQuery(e.target.value)}
       />
+
+      <div className="tone-filter-group">
+        {toneOptions.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            className={`tone-filter-button${toneFilter === option.value ? ' is-active' : ''}`}
+            onClick={() => setToneFilter(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
       
       {loading ? (
         <div className="loading">Đang tải ảnh</div>
@@ -245,8 +285,10 @@ export default function Gallery() {
               uploadedBy = img.user.username;
             }
             
+            // Dùng key duy nhất để tránh React giữ lại phần tử cũ khi id bị trùng
+            const uniqueKey = `${img._id || img.id || imageName}-${img.updatedAt || img.createdAt || ''}`;
             return (
-              <div key={img.id || img._id} className="image-card">
+              <div key={uniqueKey} className="image-card">
                 <div className="image-card-header">
                   <div className="image-card-title">{imageName}</div>
                   <div className="image-card-meta">Bởi: {uploadedBy}</div>
