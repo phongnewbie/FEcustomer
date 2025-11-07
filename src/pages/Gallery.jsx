@@ -136,6 +136,11 @@ export default function Gallery() {
     loadImages();
   }, [loadImages]);
 
+  // Đảm bảo mỗi lần đổi filter hoặc từ khóa sẽ về trang 1 để tránh lẫn dữ liệu trang khác
+  useEffect(() => {
+    setPage(1);
+  }, [toneFilter, query]);
+
   const filtered = useMemo(() => {
     // Đảm bảo images luôn là array
     const safeImages = Array.isArray(images) ? images : [];
@@ -152,9 +157,9 @@ export default function Gallery() {
       if (toneFilter === 'all') return true;
 
       const base = canonical.toLowerCase().replace(/\.[^/.]+$/, '');
-      if (toneFilter === 'white') return /_w$/.test(base);
-      if (toneFilter === 'black') return /_b$/.test(base);
-      if (toneFilter === 'yellow') return !/_w$/.test(base) && !/_b$/.test(base);
+      if (toneFilter === 'white') return base.includes('_w') && !base.includes('_b');
+      if (toneFilter === 'black') return base.includes('_b') && !base.includes('_w');
+      if (toneFilter === 'yellow') return !base.includes('_w') && !base.includes('_b');
       return true;
     });
   }, [images, query, toneFilter]);
@@ -228,7 +233,7 @@ export default function Gallery() {
         </div>
       ) : (
         <>
-        <div className="gallery-grid">
+        <div className="gallery-grid" key={`${toneFilter}:${query}`}>
           {Array.isArray(filtered) && filtered.length > 0 && filtered.map(img => {
             // Ưu tiên originalname, sau đó filename, sau đó name
             const imageName = img.originalname || img.originalName || img.filename || img.name || 'Ảnh';
